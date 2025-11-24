@@ -41,6 +41,19 @@
       </svg>
     );
 
+    const Copy = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    );
+
+    const Check = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
+
     // Lucide React icons as inline SVG components
     const Search = ({ size = 24, className = "" }) => (
       <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -120,6 +133,8 @@
       const [saving, setSaving] = useState(false);
       const [selectedRecipe, setSelectedRecipe] = useState(null);
       const [showSpotify, setShowSpotify] = useState(false);
+      const [copiedIngredients, setCopiedIngredients] = useState(false);
+      const [copiedRecipe, setCopiedRecipe] = useState(false);
       const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -229,6 +244,60 @@
           };
           reader.readAsDataURL(file);
         }
+      };
+
+      const copyToClipboard = async (text, type) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          if (type === 'ingredients') {
+            setCopiedIngredients(true);
+            setTimeout(() => setCopiedIngredients(false), 2000);
+          } else {
+            setCopiedRecipe(true);
+            setTimeout(() => setCopiedRecipe(false), 2000);
+          }
+        } catch (err) {
+          alert('Failed to copy. Please try again.');
+        }
+      };
+
+      const copyIngredients = (recipe) => {
+        const text = `${recipe.title} - Ingredients:\n\n${recipe.ingredients}`;
+        copyToClipboard(text, 'ingredients');
+      };
+
+      const copyFullRecipe = (recipe) => {
+        let text = `${recipe.title}\n\n`;
+        
+        if (recipe.description) {
+          text += `${recipe.description}\n\n`;
+        }
+        
+        if (recipe.prepTime || recipe.cookTime || recipe.equipment) {
+          text += `---\n`;
+          if (recipe.prepTime) text += `Prep Time: ${recipe.prepTime}\n`;
+          if (recipe.cookTime) text += `Cook Time: ${recipe.cookTime}\n`;
+          if (recipe.equipment) text += `Equipment: ${recipe.equipment}\n`;
+          text += `\n`;
+        }
+        
+        if (recipe.ingredients) {
+          text += `INGREDIENTS:\n${recipe.ingredients}\n\n`;
+        }
+        
+        if (recipe.instructions) {
+          text += `INSTRUCTIONS:\n`;
+          const steps = recipe.instructions.split('\n').filter(i => i.trim());
+          steps.forEach((step, idx) => {
+            text += `${idx + 1}. ${step}\n`;
+          });
+        }
+        
+        if (recipe.videoUrl) {
+          text += `\nVideo: ${recipe.videoUrl}`;
+        }
+        
+        copyToClipboard(text, 'recipe');
       };
 
       const filteredRecipes = recipes.filter(recipe => {
@@ -607,6 +676,24 @@
                       {selectedRecipe.prepTime && <span>⏱️ Prep: {selectedRecipe.prepTime}</span>}
                       {selectedRecipe.cookTime && <span>🍳 Cook: {selectedRecipe.cookTime}</span>}
                       {selectedRecipe.equipment && <span>🔪 Equipment: {selectedRecipe.equipment}</span>}
+                    </div>
+
+                    {/* Copy Buttons */}
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      <button
+                        onClick={() => copyIngredients(selectedRecipe)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      >
+                        {copiedIngredients ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedIngredients ? '✓ Copied!' : '📋 Copy Ingredients'}
+                      </button>
+                      <button
+                        onClick={() => copyFullRecipe(selectedRecipe)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                      >
+                        {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
+                      </button>
                     </div>
 
                     {selectedRecipe.ingredients && (
