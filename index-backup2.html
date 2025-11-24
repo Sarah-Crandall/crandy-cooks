@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Recipe Collection</title>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const Music = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    );
+
+    const ChevronDown = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    );
+
+    const ChevronUp = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    );
+
+    const Copy = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    );
+
+    const Check = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
+
+    // Lucide React icons as inline SVG components
+    const Search = ({ size = 24, className = "" }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+    );
+
+    const Plus = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    );
+
+    const Edit2 = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+      </svg>
+    );
+
+    const Trash2 = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+    );
+
+    const X = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    );
+
+    const Video = ({ size = 24, className = "" }) => (
+      <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+      </svg>
+    );
+
+    // Simple storage implementation using localStorage
+    window.storage = {
+      get: async (key) => {
+        const value = localStorage.getItem(key);
+        return value ? { key, value } : null;
+      },
+      set: async (key, value) => {
+        localStorage.setItem(key, value);
+        return { key, value };
+      },
+      delete: async (key) => {
+        localStorage.removeItem(key);
+        return { key, deleted: true };
+      },
+      list: async (prefix) => {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!prefix || key.startsWith(prefix)) {
+            keys.push(key);
+          }
+        }
+        return { keys };
+      }
+    };
+
+    function RecipeCatalog() {
+      const [recipes, setRecipes] = useState([]);
+      const [searchTerm, setSearchTerm] = useState('');
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showForm, setShowForm] = useState(false);
+      const [editingRecipe, setEditingRecipe] = useState(null);
+      const [saving, setSaving] = useState(false);
+      const [selectedRecipe, setSelectedRecipe] = useState(null);
+      const [showSpotify, setShowSpotify] = useState(false);
+      const [copiedIngredients, setCopiedIngredients] = useState(false);
+      const [copiedRecipe, setCopiedRecipe] = useState(false);
+      const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        ingredients: '',
+        instructions: '',
+        videoUrl: '',
+        imageFile: null,
+        imageFileData: null,
+        tags: '',
+        prepTime: '',
+        cookTime: '',
+        equipment: ''
+      });
+
+      useEffect(() => {
+        loadRecipes();
+      }, []);
+
+      const loadRecipes = async () => {
+        try {
+          const result = await window.storage.list('recipe:');
+          if (result && result.keys) {
+            const recipePromises = result.keys.map(async (key) => {
+              const data = await window.storage.get(key);
+              return data ? JSON.parse(data.value) : null;
+            });
+            const loadedRecipes = (await Promise.all(recipePromises)).filter(r => r !== null);
+            setRecipes(loadedRecipes.sort((a, b) => b.createdAt - a.createdAt));
+          }
+        } catch (error) {
+          console.log('No recipes found yet');
+        }
+      };
+
+      const saveRecipe = async () => {
+        setSaving(true);
+        try {
+          const recipe = {
+            ...formData,
+            id: editingRecipe?.id || `recipe_${Date.now()}`,
+            createdAt: editingRecipe?.createdAt || Date.now(),
+            updatedAt: Date.now()
+          };
+
+          await window.storage.set(`recipe:${recipe.id}`, JSON.stringify(recipe));
+          await loadRecipes();
+          resetForm();
+        } catch (error) {
+          alert('Error saving recipe. The video file may be too large (max 5MB). Try using an Instagram link instead, or compress your video.');
+          console.error('Save error:', error);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const deleteRecipe = async (id) => {
+        if (confirm('Are you sure you want to delete this recipe?')) {
+          await window.storage.delete(`recipe:${id}`);
+          await loadRecipes();
+        }
+      };
+
+      const resetForm = () => {
+        setFormData({
+          title: '',
+          description: '',
+          ingredients: '',
+          instructions: '',
+          videoUrl: '',
+          imageFile: null,
+          imageFileData: null,
+          tags: '',
+          prepTime: '',
+          cookTime: '',
+          equipment: ''
+        });
+        setEditingRecipe(null);
+        setShowForm(false);
+      };
+
+      const startEdit = (recipe) => {
+        setFormData({
+          ...recipe,
+          imageFile: null
+        });
+        setEditingRecipe(recipe);
+        setShowForm(true);
+      };
+
+      const handleImageFile = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const maxSize = 2 * 1024 * 1024;
+          if (file.size > maxSize) {
+            alert('Image file is too large (max 2MB). Please use a smaller or compressed image.');
+            e.target.value = '';
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setFormData({
+              ...formData,
+              imageFile: file.name,
+              imageFileData: event.target.result
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const copyToClipboard = async (text, type) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          if (type === 'ingredients') {
+            setCopiedIngredients(true);
+            setTimeout(() => setCopiedIngredients(false), 2000);
+          } else {
+            setCopiedRecipe(true);
+            setTimeout(() => setCopiedRecipe(false), 2000);
+          }
+        } catch (err) {
+          alert('Failed to copy. Please try again.');
+        }
+      };
+
+      const copyIngredients = (recipe) => {
+        const text = `${recipe.title} - Ingredients:\n\n${recipe.ingredients}`;
+        copyToClipboard(text, 'ingredients');
+      };
+
+      const copyFullRecipe = (recipe) => {
+        let text = `${recipe.title}\n\n`;
+        
+        if (recipe.description) {
+          text += `${recipe.description}\n\n`;
+        }
+        
+        if (recipe.prepTime || recipe.cookTime || recipe.equipment) {
+          text += `---\n`;
+          if (recipe.prepTime) text += `Prep Time: ${recipe.prepTime}\n`;
+          if (recipe.cookTime) text += `Cook Time: ${recipe.cookTime}\n`;
+          if (recipe.equipment) text += `Equipment: ${recipe.equipment}\n`;
+          text += `\n`;
+        }
+        
+        if (recipe.ingredients) {
+          text += `INGREDIENTS:\n${recipe.ingredients}\n\n`;
+        }
+        
+        if (recipe.instructions) {
+          text += `INSTRUCTIONS:\n`;
+          const steps = recipe.instructions.split('\n').filter(i => i.trim());
+          steps.forEach((step, idx) => {
+            text += `${idx + 1}. ${step}\n`;
+          });
+        }
+        
+        if (recipe.videoUrl) {
+          text += `\nVideo: ${recipe.videoUrl}`;
+        }
+        
+        copyToClipboard(text, 'recipe');
+      };
+
+      const filteredRecipes = recipes.filter(recipe => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          recipe.title.toLowerCase().includes(searchLower) ||
+          recipe.description.toLowerCase().includes(searchLower) ||
+          recipe.ingredients.toLowerCase().includes(searchLower) ||
+          recipe.tags.toLowerCase().includes(searchLower) ||
+          (recipe.equipment && recipe.equipment.toLowerCase().includes(searchLower))
+        );
+      });
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+          <header className="bg-white shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-orange-600">Family Recipe Collection</h1>
+                <button
+                  onClick={() => setIsAdmin(!isAdmin)}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                >
+                  {isAdmin ? 'View Mode' : 'Admin Mode'}
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="mb-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search recipes by name, ingredient, or tag..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+            </div>
+
+            {/* Collapsible Spotify Player */}
+            <div className="mb-6">
+              <button
+                onClick={() => setShowSpotify(!showSpotify)}
+                className="flex items-center justify-between w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <Music size={20} className="text-green-600" />
+                  <span className="font-medium text-gray-800">🎵 Cooking Playlist</span>
+                </div>
+                {showSpotify ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+              
+              {showSpotify && (
+                <div className="mt-3 bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
+                  <iframe 
+                    style={{borderRadius: '12px'}} 
+                    src="https://open.spotify.com/embed/playlist/3JI1THOW9yCNYhk6ZWaHZD?utm_source=generator" 
+                    width="100%" 
+                    height="380" 
+                    frameBorder="0" 
+                    allowFullScreen="" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  />
+                </div>
+              )}
+            </div>
+
+            {isAdmin && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                >
+                  <Plus size={20} />
+                  Add New Recipe
+                </button>
+              </div>
+            )}
+
+            {showForm && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {editingRecipe ? 'Edit Recipe' : 'Add New Recipe'}
+                    </h2>
+                    <button onClick={resetForm} className="text-gray-500 hover:text-gray-700">
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recipe Title</label>
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="e.g., Grandma's Chocolate Chip Cookies"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        rows="2"
+                        placeholder="Brief description of the dish"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time</label>
+                        <input
+                          type="text"
+                          value={formData.prepTime}
+                          onChange={(e) => setFormData({...formData, prepTime: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="e.g., 15 mins"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Cook Time</label>
+                        <input
+                          type="text"
+                          value={formData.cookTime}
+                          onChange={(e) => setFormData({...formData, cookTime: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="e.g., 30 mins"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ingredients (one per line)</label>
+                      <textarea
+                        value={formData.ingredients}
+                        onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        rows="6"
+                        placeholder="2 cups flour&#10;1 cup sugar&#10;3 eggs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Equipment Needed (comma separated)</label>
+                      <input
+                        type="text"
+                        value={formData.equipment}
+                        onChange={(e) => setFormData({...formData, equipment: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="Cast iron skillet, slow cooker, food processor"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Instructions (one step per line)</label>
+                      <textarea
+                        value={formData.instructions}
+                        onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        rows="6"
+                        placeholder="Preheat oven to 350°F&#10;Mix dry ingredients&#10;Add wet ingredients"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recipe Image (optional)</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFile}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                      {formData.imageFile && (
+                        <p className="text-sm text-green-600 mt-1">✓ {formData.imageFile}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Max 2MB - screenshot from your video works great!</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Video URL (Instagram or YouTube)</label>
+                      <input
+                        type="text"
+                        value={formData.videoUrl}
+                        onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="https://www.instagram.com/p/..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        value={formData.tags}
+                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="dessert, cookies, chocolate, baking"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={saveRecipe}
+                        disabled={saving}
+                        className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                        {saving ? 'Saving...' : (editingRecipe ? 'Update Recipe' : 'Save Recipe')}
+                      </button>
+                      <button
+                        onClick={resetForm}
+                        disabled={saving}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition disabled:bg-gray-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {filteredRecipes.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  {recipes.length === 0 ? 'No recipes yet. Add your first recipe!' : 'No recipes match your search.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {filteredRecipes.map((recipe) => (
+                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <div className="flex">
+                      <div 
+                        className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group"
+                        onClick={() => setSelectedRecipe(recipe)}
+                      >
+                        {recipe.imageFileData ? (
+                          <>
+                            <img 
+                              src={recipe.imageFileData} 
+                              alt={recipe.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                              <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition">
+                                View Recipe
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <Video size={48} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 
+                              className="text-2xl font-bold text-gray-800 cursor-pointer hover:text-orange-600 transition"
+                              onClick={() => setSelectedRecipe(recipe)}
+                            >
+                              {recipe.title}
+                            </h3>
+                            {isAdmin && (
+                              <div className="flex gap-2 ml-2">
+                                <button
+                                  onClick={() => startEdit(recipe)}
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  <Edit2 size={18} />
+                                </button>
+                                <button
+                                  onClick={() => deleteRecipe(recipe.id)}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                            {recipe.prepTime && (
+                              <span className="flex items-center">⏱️ Prep: {recipe.prepTime}</span>
+                            )}
+                            {recipe.cookTime && (
+                              <span className="flex items-center">🍳 Cook: {recipe.cookTime}</span>
+                            )}
+                            {recipe.equipment && (
+                              <span className="flex items-center">🔪 {recipe.equipment}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedRecipe(recipe)}
+                          className="mt-3 self-start px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition"
+                        >
+                          View Full Recipe
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedRecipe && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                <div className="bg-white rounded-lg max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+                  <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                    <h2 className="text-3xl font-bold text-gray-800">{selectedRecipe.title}</h2>
+                    <button 
+                      onClick={() => setSelectedRecipe(null)} 
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="p-6">
+                    {selectedRecipe.imageFileData && (
+                      <div className="relative bg-gray-100 mb-6 rounded-lg overflow-hidden">
+                        <img 
+                          src={selectedRecipe.imageFileData} 
+                          alt={selectedRecipe.title}
+                          className="w-full max-h-96 object-contain"
+                        />
+                        {selectedRecipe.videoUrl && (
+                          <div className="absolute bottom-4 right-4">
+                            <a
+                              href={selectedRecipe.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-lg"
+                            >
+                              <Video size={20} />
+                              Watch Video
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {!selectedRecipe.imageFileData && selectedRecipe.videoUrl && (
+                      <div className="mb-6">
+                        <a
+                          href={selectedRecipe.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                        >
+                          <Video size={20} />
+                          Watch Video on Instagram
+                        </a>
+                      </div>
+                    )}
+
+                    {selectedRecipe.description && (
+                      <p className="text-gray-600 mb-4">{selectedRecipe.description}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-4 text-gray-600 mb-6">
+                      {selectedRecipe.prepTime && <span>⏱️ Prep: {selectedRecipe.prepTime}</span>}
+                      {selectedRecipe.cookTime && <span>🍳 Cook: {selectedRecipe.cookTime}</span>}
+                      {selectedRecipe.equipment && <span>🔪 Equipment: {selectedRecipe.equipment}</span>}
+                    </div>
+
+                    {/* Copy Buttons */}
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      <button
+                        onClick={() => copyIngredients(selectedRecipe)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      >
+                        {copiedIngredients ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedIngredients ? '✓ Copied!' : '📋 Copy Ingredients'}
+                      </button>
+                      <button
+                        onClick={() => copyFullRecipe(selectedRecipe)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                      >
+                        {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
+                      </button>
+                    </div>
+
+                    {selectedRecipe.ingredients && (
+                      <div className="mb-6">
+                        <h4 className="text-xl font-bold text-gray-800 mb-3">Ingredients</h4>
+                        <ul className="text-gray-700 space-y-2">
+                          {selectedRecipe.ingredients.split('\n').filter(i => i.trim()).map((ingredient, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="text-orange-500 mr-2">•</span>
+                              <span>{ingredient}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {selectedRecipe.instructions && (
+                      <div className="mb-6">
+                        <h4 className="text-xl font-bold text-gray-800 mb-3">Instructions</h4>
+                        <ol className="text-gray-700 space-y-3">
+                          {selectedRecipe.instructions.split('\n').filter(i => i.trim()).map((step, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="font-bold text-orange-500 mr-3 flex-shrink-0">{idx + 1}.</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+
+                    {selectedRecipe.tags && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedRecipe.tags.split(',').map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full"
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<RecipeCatalog />, document.getElementById('root'));
+  </script>
+</body>
+</html>
