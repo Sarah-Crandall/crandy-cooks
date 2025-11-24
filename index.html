@@ -21,38 +21,12 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const Music = ({ size = 24 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18V5l12-2v13"></path>
-        <circle cx="6" cy="18" r="3"></circle>
-        <circle cx="18" cy="16" r="3"></circle>
-      </svg>
-    );
-
-    const ChevronDown = ({ size = 24 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-    );
-
-    const ChevronUp = ({ size = 24 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
-    );
-
-    const Copy = ({ size = 24 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-      </svg>
-    );
-
-    const Check = ({ size = 24 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
-    );
+    // ============================================
+    // AIRTABLE CONFIGURATION - REPLACE THESE VALUES
+    // ============================================
+    const AIRTABLE_TOKEN = 'patVXpDnXMklg3Iya.a3afa5e3b11a69d8fbb6ea8abc171c13e3b8fdd7e68bb3c9621bd64847aef11c';  // Replace with your token (starts with "pat")
+    const BASE_ID = 'appJkIT5G9ZkVgqgA';                 // Replace with your base ID (starts with "app")
+    const TABLE_NAME = 'Crandy Cookes Recipe';                   // Replace if you renamed your table
 
     // Lucide React icons as inline SVG components
     const Search = ({ size = 24, className = "" }) => (
@@ -98,31 +72,38 @@
       </svg>
     );
 
-    // Simple storage implementation using localStorage
-    window.storage = {
-      get: async (key) => {
-        const value = localStorage.getItem(key);
-        return value ? { key, value } : null;
-      },
-      set: async (key, value) => {
-        localStorage.setItem(key, value);
-        return { key, value };
-      },
-      delete: async (key) => {
-        localStorage.removeItem(key);
-        return { key, deleted: true };
-      },
-      list: async (prefix) => {
-        const keys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (!prefix || key.startsWith(prefix)) {
-            keys.push(key);
-          }
-        }
-        return { keys };
-      }
-    };
+    const Music = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    );
+
+    const ChevronDown = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    );
+
+    const ChevronUp = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    );
+
+    const Copy = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    );
+
+    const Check = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
 
     function RecipeCatalog() {
       const [recipes, setRecipes] = useState([]);
@@ -135,6 +116,7 @@
       const [showSpotify, setShowSpotify] = useState(false);
       const [copiedIngredients, setCopiedIngredients] = useState(false);
       const [copiedRecipe, setCopiedRecipe] = useState(false);
+      const [loading, setLoading] = useState(true);
       const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -154,46 +136,126 @@
       }, []);
 
       const loadRecipes = async () => {
+        setLoading(true);
         try {
-          const result = await window.storage.list('recipe:');
-          if (result && result.keys) {
-            const recipePromises = result.keys.map(async (key) => {
-              const data = await window.storage.get(key);
-              return data ? JSON.parse(data.value) : null;
-            });
-            const loadedRecipes = (await Promise.all(recipePromises)).filter(r => r !== null);
-            setRecipes(loadedRecipes.sort((a, b) => b.createdAt - a.createdAt));
+          const response = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}?sort%5B0%5D%5Bfield%5D=createdAt&sort%5B0%5D%5Bdirection%5D=desc`,
+            {
+              headers: {
+                'Authorization': `Bearer ${AIRTABLE_TOKEN}`
+              }
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to load recipes');
           }
+
+          const data = await response.json();
+          const loadedRecipes = data.records.map(record => ({
+            id: record.id,
+            ...record.fields,
+            imageFileData: record.fields.imageUrl?.[0]?.url || null
+          }));
+          
+          setRecipes(loadedRecipes);
         } catch (error) {
-          console.log('No recipes found yet');
+          console.error('Error loading recipes:', error);
+          alert('Error loading recipes. Please check your Airtable configuration.');
+        } finally {
+          setLoading(false);
         }
       };
 
       const saveRecipe = async () => {
         setSaving(true);
         try {
-          const recipe = {
-            ...formData,
-            id: editingRecipe?.id || `recipe_${Date.now()}`,
-            createdAt: editingRecipe?.createdAt || Date.now(),
-            updatedAt: Date.now()
+          const fields = {
+            title: formData.title,
+            description: formData.description,
+            ingredients: formData.ingredients,
+            instructions: formData.instructions,
+            videoUrl: formData.videoUrl,
+            tags: formData.tags,
+            prepTime: formData.prepTime,
+            cookTime: formData.cookTime,
+            equipment: formData.equipment
           };
 
-          await window.storage.set(`recipe:${recipe.id}`, JSON.stringify(recipe));
+          // Handle image upload if there's a new image
+          if (formData.imageFileData && !editingRecipe) {
+            fields.imageUrl = [{
+              url: formData.imageFileData
+            }];
+          }
+
+          let response;
+          if (editingRecipe) {
+            // Update existing recipe
+            response = await fetch(
+              `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}/${editingRecipe.id}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+              }
+            );
+          } else {
+            // Create new recipe
+            response = await fetch(
+              `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+              }
+            );
+          }
+
+          if (!response.ok) {
+            throw new Error('Failed to save recipe');
+          }
+
           await loadRecipes();
           resetForm();
         } catch (error) {
-          alert('Error saving recipe. The video file may be too large (max 5MB). Try using an Instagram link instead, or compress your video.');
           console.error('Save error:', error);
+          alert('Error saving recipe. Please try again.');
         } finally {
           setSaving(false);
         }
       };
 
       const deleteRecipe = async (id) => {
-        if (confirm('Are you sure you want to delete this recipe?')) {
-          await window.storage.delete(`recipe:${id}`);
+        if (!confirm('Are you sure you want to delete this recipe?')) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}/${id}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${AIRTABLE_TOKEN}`
+              }
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to delete recipe');
+          }
+
           await loadRecipes();
+        } catch (error) {
+          console.error('Delete error:', error);
+          alert('Error deleting recipe. Please try again.');
         }
       };
 
@@ -217,8 +279,17 @@
 
       const startEdit = (recipe) => {
         setFormData({
-          ...recipe,
-          imageFile: null
+          title: recipe.title || '',
+          description: recipe.description || '',
+          ingredients: recipe.ingredients || '',
+          instructions: recipe.instructions || '',
+          videoUrl: recipe.videoUrl || '',
+          imageFile: null,
+          imageFileData: recipe.imageFileData || null,
+          tags: recipe.tags || '',
+          prepTime: recipe.prepTime || '',
+          cookTime: recipe.cookTime || '',
+          equipment: recipe.equipment || ''
         });
         setEditingRecipe(recipe);
         setShowForm(true);
@@ -303,10 +374,10 @@
       const filteredRecipes = recipes.filter(recipe => {
         const searchLower = searchTerm.toLowerCase();
         return (
-          recipe.title.toLowerCase().includes(searchLower) ||
-          recipe.description.toLowerCase().includes(searchLower) ||
-          recipe.ingredients.toLowerCase().includes(searchLower) ||
-          recipe.tags.toLowerCase().includes(searchLower) ||
+          (recipe.title && recipe.title.toLowerCase().includes(searchLower)) ||
+          (recipe.description && recipe.description.toLowerCase().includes(searchLower)) ||
+          (recipe.ingredients && recipe.ingredients.toLowerCase().includes(searchLower)) ||
+          (recipe.tags && recipe.tags.toLowerCase().includes(searchLower)) ||
           (recipe.equipment && recipe.equipment.toLowerCase().includes(searchLower))
         );
       });
@@ -529,7 +600,11 @@
               </div>
             )}
 
-            {filteredRecipes.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">Loading recipes...</p>
+              </div>
+            ) : filteredRecipes.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
                   {recipes.length === 0 ? 'No recipes yet. Add your first recipe!' : 'No recipes match your search.'}
@@ -596,156 +671,4 @@
                               <span className="flex items-center">⏱️ Prep: {recipe.prepTime}</span>
                             )}
                             {recipe.cookTime && (
-                              <span className="flex items-center">🍳 Cook: {recipe.cookTime}</span>
-                            )}
-                            {recipe.equipment && (
-                              <span className="flex items-center">🔪 {recipe.equipment}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => setSelectedRecipe(recipe)}
-                          className="mt-3 self-start px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition"
-                        >
-                          View Full Recipe
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {selectedRecipe && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                <div className="bg-white rounded-lg max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
-                  <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
-                    <h2 className="text-3xl font-bold text-gray-800">{selectedRecipe.title}</h2>
-                    <button 
-                      onClick={() => setSelectedRecipe(null)} 
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <div className="p-6">
-                    {selectedRecipe.imageFileData && (
-                      <div className="relative bg-gray-100 mb-6 rounded-lg overflow-hidden">
-                        <img 
-                          src={selectedRecipe.imageFileData} 
-                          alt={selectedRecipe.title}
-                          className="w-full max-h-96 object-contain"
-                        />
-                        {selectedRecipe.videoUrl && (
-                          <div className="absolute bottom-4 right-4">
-                            <a
-                              href={selectedRecipe.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-lg"
-                            >
-                              <Video size={20} />
-                              Watch Video
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {!selectedRecipe.imageFileData && selectedRecipe.videoUrl && (
-                      <div className="mb-6">
-                        <a
-                          href={selectedRecipe.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                        >
-                          <Video size={20} />
-                          Watch Video on Instagram
-                        </a>
-                      </div>
-                    )}
-
-                    {selectedRecipe.description && (
-                      <p className="text-gray-600 mb-4">{selectedRecipe.description}</p>
-                    )}
-
-                    <div className="flex flex-wrap gap-4 text-gray-600 mb-6">
-                      {selectedRecipe.prepTime && <span>⏱️ Prep: {selectedRecipe.prepTime}</span>}
-                      {selectedRecipe.cookTime && <span>🍳 Cook: {selectedRecipe.cookTime}</span>}
-                      {selectedRecipe.equipment && <span>🔪 Equipment: {selectedRecipe.equipment}</span>}
-                    </div>
-
-                    {/* Copy Buttons */}
-                    <div className="flex flex-wrap gap-3 mb-6">
-                      <button
-                        onClick={() => copyIngredients(selectedRecipe)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                      >
-                        {copiedIngredients ? <Check size={18} /> : <Copy size={18} />}
-                        {copiedIngredients ? '✓ Copied!' : '📋 Copy Ingredients'}
-                      </button>
-                      <button
-                        onClick={() => copyFullRecipe(selectedRecipe)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                      >
-                        {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
-                        {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
-                      </button>
-                    </div>
-
-                    {selectedRecipe.ingredients && (
-                      <div className="mb-6">
-                        <h4 className="text-xl font-bold text-gray-800 mb-3">Ingredients</h4>
-                        <ul className="text-gray-700 space-y-2">
-                          {selectedRecipe.ingredients.split('\n').filter(i => i.trim()).map((ingredient, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="text-orange-500 mr-2">•</span>
-                              <span>{ingredient}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {selectedRecipe.instructions && (
-                      <div className="mb-6">
-                        <h4 className="text-xl font-bold text-gray-800 mb-3">Instructions</h4>
-                        <ol className="text-gray-700 space-y-3">
-                          {selectedRecipe.instructions.split('\n').filter(i => i.trim()).map((step, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="font-bold text-orange-500 mr-3 flex-shrink-0">{idx + 1}.</span>
-                              <span>{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-
-                    {selectedRecipe.tags && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedRecipe.tags.split(',').map((tag, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full"
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    ReactDOM.render(<RecipeCatalog />, document.getElementById('root'));
-  </script>
-</body>
-</html>
+                              <span className="flex items-center">
