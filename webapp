@@ -1,0 +1,542 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Edit2, Trash2, X, Video } from 'lucide-react';
+
+export default function RecipeCatalog() {
+  const [recipes, setRecipes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    ingredients: '',
+    instructions: '',
+    videoUrl: '',
+    imageFile: null,
+    imageFileData: null,
+    tags: '',
+    prepTime: '',
+    cookTime: '',
+    equipment: ''
+  });
+
+  useEffect(() => {
+    loadRecipes();
+  }, []);
+
+  const loadRecipes = async () => {
+    try {
+      const result = await window.storage.list('recipe:');
+      if (result && result.keys) {
+        const recipePromises = result.keys.map(async (key) => {
+          const data = await window.storage.get(key);
+          return data ? JSON.parse(data.value) : null;
+        });
+        const loadedRecipes = (await Promise.all(recipePromises)).filter(r => r !== null);
+        setRecipes(loadedRecipes.sort((a, b) => b.createdAt - a.createdAt));
+      }
+    } catch (error) {
+      console.log('No recipes found yet');
+    }
+  };
+
+  const saveRecipe = async () => {
+    setSaving(true);
+    try {
+      const recipe = {
+        ...formData,
+        id: editingRecipe?.id || `recipe_${Date.now()}`,
+        createdAt: editingRecipe?.createdAt || Date.now(),
+        updatedAt: Date.now()
+      };
+
+      await window.storage.set(`recipe:${recipe.id}`, JSON.stringify(recipe));
+      await loadRecipes();
+      resetForm();
+    } catch (error) {
+      alert('Error saving recipe. The video file may be too large (max 5MB). Try using an Instagram link instead, or compress your video.');
+      console.error('Save error:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteRecipe = async (id) => {
+    if (confirm('Are you sure you want to delete this recipe?')) {
+      await window.storage.delete(`recipe:${id}`);
+      await loadRecipes();
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      ingredients: '',
+      instructions: '',
+      videoUrl: '',
+      imageFile: null,
+      imageFileData: null,
+      tags: '',
+      prepTime: '',
+      cookTime: '',
+      equipment: ''
+    });
+    setEditingRecipe(null);
+    setShowForm(false);
+  };
+
+  const startEdit = (recipe) => {
+    setFormData({
+      ...recipe,
+      imageFile: null
+    });
+    setEditingRecipe(recipe);
+    setShowForm(true);
+  };
+
+  const handleImageFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (2MB limit for images)
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (file.size > maxSize) {
+        alert('Image file is too large (max 2MB). Please use a smaller or compressed image.');
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData({
+          ...formData,
+          imageFile: file.name,
+          imageFileData: event.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const getEmbedUrl = (url) => {
+    if (!url) return '';
+    if (url.includes('instagram.com')) {
+      const postId = url.match(/\/p\/([^\/]+)/)?.[1] || url.match(/\/reel\/([^\/]+)/)?.[1];
+      return postId ? `https://www.instagram.com/p/${postId}/embed` : '';
+    }
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?\/]+)/)?.[1];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    }
+    return url;
+  };
+
+  const filteredRecipes = recipes.filter(recipe => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      recipe.title.toLowerCase().includes(searchLower) ||
+      recipe.description.toLowerCase().includes(searchLower) ||
+      recipe.ingredients.toLowerCase().includes(searchLower) ||
+      recipe.tags.toLowerCase().includes(searchLower) ||
+      (recipe.equipment && recipe.equipment.toLowerCase().includes(searchLower))
+    );
+  });
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-orange-600">Family Recipe Collection</h1>
+            <button
+              onClick={() => setIsAdmin(!isAdmin)}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            >
+              {isAdmin ? 'View Mode' : 'Admin Mode'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search recipes by name, ingredient, or tag..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+        </div>
+
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+            >
+              <Plus size={20} />
+              Add New Recipe
+            </button>
+          </div>
+        )}
+
+        {/* Recipe Form Modal */}
+        {showForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingRecipe ? 'Edit Recipe' : 'Add New Recipe'}
+                </h2>
+                <button onClick={resetForm} className="text-gray-500 hover:text-gray-700">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Recipe Title</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="e.g., Grandma's Chocolate Chip Cookies"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    rows="2"
+                    placeholder="Brief description of the dish"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time</label>
+                    <input
+                      type="text"
+                      value={formData.prepTime}
+                      onChange={(e) => setFormData({...formData, prepTime: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="e.g., 15 mins"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cook Time</label>
+                    <input
+                      type="text"
+                      value={formData.cookTime}
+                      onChange={(e) => setFormData({...formData, cookTime: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="e.g., 30 mins"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ingredients (one per line)</label>
+                  <textarea
+                    value={formData.ingredients}
+                    onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    rows="6"
+                    placeholder="2 cups flour&#10;1 cup sugar&#10;3 eggs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Equipment Needed (comma separated)</label>
+                  <input
+                    type="text"
+                    value={formData.equipment}
+                    onChange={(e) => setFormData({...formData, equipment: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Cast iron skillet, slow cooker, food processor"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Instructions (one step per line)</label>
+                  <textarea
+                    value={formData.instructions}
+                    onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    rows="6"
+                    placeholder="Preheat oven to 350°F&#10;Mix dry ingredients&#10;Add wet ingredients"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Recipe Image (optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageFile}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  {formData.imageFile && (
+                    <p className="text-sm text-green-600 mt-1">✓ {formData.imageFile}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">Max 2MB - screenshot from your video works great!</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Video URL (Instagram or YouTube)</label>
+                  <input
+                    type="text"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="https://www.instagram.com/p/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="dessert, cookies, chocolate, baking"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={saveRecipe}
+                    disabled={saving}
+                    className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Saving...' : (editingRecipe ? 'Update Recipe' : 'Save Recipe')}
+                  </button>
+                  <button
+                    onClick={resetForm}
+                    disabled={saving}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition disabled:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recipe Grid */}
+        {filteredRecipes.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              {recipes.length === 0 ? 'No recipes yet. Add your first recipe!' : 'No recipes match your search.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {filteredRecipes.map((recipe) => (
+              <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                <div className="flex">
+                  {/* Square Image on Left */}
+                  <div 
+                    className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group"
+                    onClick={() => setSelectedRecipe(recipe)}
+                  >
+                    {recipe.imageFileData ? (
+                      <>
+                        <img 
+                          src={recipe.imageFileData} 
+                          alt={recipe.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
+                          <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition">
+                            View Recipe
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <Video size={48} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Preview Info on Right */}
+                  <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 
+                          className="text-2xl font-bold text-gray-800 cursor-pointer hover:text-orange-600 transition"
+                          onClick={() => setSelectedRecipe(recipe)}
+                        >
+                          {recipe.title}
+                        </h3>
+                        {isAdmin && (
+                          <div className="flex gap-2 ml-2">
+                            <button
+                              onClick={() => startEdit(recipe)}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => deleteRecipe(recipe.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                        {recipe.prepTime && (
+                          <span className="flex items-center">⏱️ Prep: {recipe.prepTime}</span>
+                        )}
+                        {recipe.cookTime && (
+                          <span className="flex items-center">🍳 Cook: {recipe.cookTime}</span>
+                        )}
+                        {recipe.equipment && (
+                          <span className="flex items-center">🔪 {recipe.equipment}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedRecipe(recipe)}
+                      className="mt-3 self-start px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition"
+                    >
+                      View Full Recipe
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Full Recipe Modal */}
+        {selectedRecipe && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                <h2 className="text-3xl font-bold text-gray-800">{selectedRecipe.title}</h2>
+                <button 
+                  onClick={() => setSelectedRecipe(null)} 
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                {selectedRecipe.imageFileData && (
+                  <div className="relative bg-gray-100 mb-6 rounded-lg overflow-hidden">
+                    <img 
+                      src={selectedRecipe.imageFileData} 
+                      alt={selectedRecipe.title}
+                      className="w-full max-h-96 object-contain"
+                    />
+                    {selectedRecipe.videoUrl && (
+                      <div className="absolute bottom-4 right-4">
+                        <a
+                          href={selectedRecipe.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-lg"
+                        >
+                          <Video size={20} />
+                          Watch Video
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!selectedRecipe.imageFileData && selectedRecipe.videoUrl && (
+                  <div className="mb-6">
+                    <a
+                      href={selectedRecipe.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                    >
+                      <Video size={20} />
+                      Watch Video on Instagram
+                    </a>
+                  </div>
+                )}
+
+                {selectedRecipe.description && (
+                  <p className="text-gray-600 mb-4">{selectedRecipe.description}</p>
+                )}
+
+                <div className="flex flex-wrap gap-4 text-gray-600 mb-6">
+                  {selectedRecipe.prepTime && <span>⏱️ Prep: {selectedRecipe.prepTime}</span>}
+                  {selectedRecipe.cookTime && <span>🍳 Cook: {selectedRecipe.cookTime}</span>}
+                  {selectedRecipe.equipment && <span>🔪 Equipment: {selectedRecipe.equipment}</span>}
+                </div>
+
+                {selectedRecipe.ingredients && (
+                  <div className="mb-6">
+                    <h4 className="text-xl font-bold text-gray-800 mb-3">Ingredients</h4>
+                    <ul className="text-gray-700 space-y-2">
+                      {selectedRecipe.ingredients.split('\n').filter(i => i.trim()).map((ingredient, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <span className="text-orange-500 mr-2">•</span>
+                          <span>{ingredient}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedRecipe.instructions && (
+                  <div className="mb-6">
+                    <h4 className="text-xl font-bold text-gray-800 mb-3">Instructions</h4>
+                    <ol className="text-gray-700 space-y-3">
+                      {selectedRecipe.instructions.split('\n').filter(i => i.trim()).map((step, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <span className="font-bold text-orange-500 mr-3 flex-shrink-0">{idx + 1}.</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {selectedRecipe.tags && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRecipe.tags.split(',').map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full"
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
