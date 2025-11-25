@@ -539,7 +539,7 @@
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {filteredRecipes.map((recipe) => (
-                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" style={{border: '2px solid #B03060'}}>
                     <div className="flex">
                       <div 
                         className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group"
@@ -607,7 +607,7 @@
 
                         <button
                           onClick={() => setSelectedRecipe(recipe)}
-                          className="mt-3 self-start px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition"
+                          className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
                         >
                           View Full Recipe
                         </button>
@@ -690,7 +690,7 @@
                       </button>
                       <button
                         onClick={() => copyFullRecipe(selectedRecipe)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
                       >
                         {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
                         {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
