@@ -748,16 +748,35 @@
                             )}
                           </div>
 
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                            {recipe.prepTime && (
-                              <span className="flex items-center">⏱️ Prep: {recipe.prepTime}</span>
-                            )}
-                            {recipe.cookTime && (
-                              <span className="flex items-center">🍳 Cook: {recipe.cookTime}</span>
-                            )}
-                            {recipe.equipment && (
-                              <span className="flex items-center">🔪 {recipe.equipment}</span>
-                            )}
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                              {recipe.prepTime && (
+                                <span className="flex items-center">⏱️ Prep: {recipe.prepTime}</span>
+                              )}
+                              {recipe.cookTime && (
+                                <span className="flex items-center">🍳 Cook: {recipe.cookTime}</span>
+                              )}
+                              {recipe.equipment && (
+                                <span className="flex items-center">🔪 {recipe.equipment}</span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {recipe.mealType && recipe.mealType.split(',').map((type, idx) => (
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                  {type.trim()}
+                                </span>
+                              ))}
+                              {recipe.servingSize && (
+                                <span className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                  {recipe.servingSize === 'dinner-for-two' ? 'Dinner for Two' : 'Hosting/Leftovers'}
+                                </span>
+                              )}
+                              {recipe.season && recipe.season.split(',').map((s, idx) => (
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                  {s.trim()}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
 
