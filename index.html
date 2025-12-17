@@ -467,6 +467,43 @@
               </div>
             </div>
 
+            {/* Recently Viewed */}
+            {recentlyViewed.length > 0 && (
+              <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#556B2F'}}>
+                <h3 className="text-sm font-semibold mb-3" style={{color: '#556B2F'}}>Recently Viewed</h3>
+                <div className="flex gap-3 overflow-x-auto">
+                  {recentlyViewed.map(recipeId => {
+                    const recipe = recipes.find(r => r.id === recipeId);
+                    if (!recipe) return null;
+                    return (
+                      <div
+                        key={recipe.id}
+                        onClick={() => {
+                          setSelectedRecipe(recipe);
+                          addToRecentlyViewed(recipe.id);
+                        }}
+                        className="flex-shrink-0 w-32 cursor-pointer hover:opacity-80 transition"
+                      >
+                        {recipe.imageFileData ? (
+                          <img
+                            src={recipe.imageFileData}
+                            alt={recipe.title}
+                            className="w-32 h-32 object-cover rounded-lg mb-2"
+                            style={{border: '2px solid #556B2F'}}
+                          />
+                        ) : (
+                          <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-2" style={{border: '2px solid #556B2F'}}>
+                            <Video size={32} className="text-gray-400" />
+                          </div>
+                        )}
+                        <p className="text-xs font-medium text-gray-800 line-clamp-2">{recipe.title}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Collapsible Spotify Player */}
             <div className="mb-6">
               <button
