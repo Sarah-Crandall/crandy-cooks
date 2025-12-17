@@ -140,6 +140,7 @@
       const [copiedIngredients, setCopiedIngredients] = useState(false);
       const [successMessage, setSuccessMessage] = useState('');
       const [copiedRecipe, setCopiedRecipe] = useState(false);
+      const [favorites, setFavorites] = useState([]);
       const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -159,6 +160,7 @@
 
       useEffect(() => {
         loadRecipes();
+        loadFavorites();
       }, []);
 
       const loadRecipes = async () => {
@@ -175,6 +177,27 @@
         } catch (error) {
           console.log('No recipes found yet');
         }
+      };
+      const loadFavorites = async () => {
+        try {
+          const result = await window.storage.get('favorites');
+          if (result) {
+            setFavorites(JSON.parse(result.value));
+          }
+        } catch (error) {
+          console.log('No favorites yet');
+        }
+      };
+
+      const toggleFavorite = async (recipeId) => {
+        let newFavorites;
+        if (favorites.includes(recipeId)) {
+          newFavorites = favorites.filter(id => id !== recipeId);
+        } else {
+          newFavorites = [...favorites, recipeId];
+        }
+        setFavorites(newFavorites);
+        await window.storage.set('favorites', JSON.stringify(newFavorites));
       };
 
       const saveRecipe = async () => {
