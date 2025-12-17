@@ -148,6 +148,7 @@
       const [copiedRecipe, setCopiedRecipe] = useState(false);
       const [favorites, setFavorites] = useState([]);
       const [recentlyViewed, setRecentlyViewed] = useState([]);
+      const [viewCounts, setViewCounts] = useState({});
       const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -169,6 +170,7 @@
         loadRecipes();
         loadFavorites();
         loadRecentlyViewed();
+        loadViewCounts();
       }, []);
 
       const loadRecipes = async () => {
@@ -207,6 +209,18 @@
           console.log('No recently viewed yet');
         }
       };
+
+      const loadViewCounts = async () => {
+        try {
+          const result = await window.storage.get('viewCounts');
+          if (result) {
+            setViewCounts(JSON.parse(result.value));
+          }
+        } catch (error) {
+          console.log('No view counts yet');
+        }
+      };
+      
       const toggleFavorite = async (recipeId) => {
         let newFavorites;
         if (favorites.includes(recipeId)) {
@@ -219,11 +233,18 @@
       };
 
       const addToRecentlyViewed = async (recipeId) => {
+        // Update recently viewed
         let newRecentlyViewed = recentlyViewed.filter(id => id !== recipeId);
         newRecentlyViewed.unshift(recipeId);
-        newRecentlyViewed = newRecentlyViewed.slice(0, 3); // Keep only last 3
+        newRecentlyViewed = newRecentlyViewed.slice(0, 3);
         setRecentlyViewed(newRecentlyViewed);
         await window.storage.set('recentlyViewed', JSON.stringify(newRecentlyViewed));
+        
+        // Update view counts
+        const newViewCounts = {...viewCounts};
+        newViewCounts[recipeId] = (newViewCounts[recipeId] || 0) + 1;
+        setViewCounts(newViewCounts);
+        await window.storage.set('viewCounts', JSON.stringify(newViewCounts));
       };
       
       const saveRecipe = async () => {
