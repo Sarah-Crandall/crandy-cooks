@@ -180,20 +180,49 @@
       }, []);
 
       const loadRecipes = async () => {
+        setLoading(true);
         try {
-          const result = await window.storage.list('recipe:');
-          if (result && result.keys) {
-            const recipePromises = result.keys.map(async (key) => {
-              const data = await window.storage.get(key);
-              return data ? JSON.parse(data.value) : null;
-            });
-            const loadedRecipes = (await Promise.all(recipePromises)).filter(r => r !== null);
-            setRecipes(loadedRecipes.sort((a, b) => b.createdAt - a.createdAt));
+          const response = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${AIRTABLE_TOKEN}`
+              }
+            }
+          );
+      
+          if (!response.ok) {
+            throw new Error('Failed to load recipes from Airtable');
           }
+      
+          const data = await response.json();
+          const loadedRecipes = data.records.map(record => ({
+            id: record.id,
+            title: record.fields.title || '',
+            description: record.fields.description || '',
+            ingredients: record.fields.ingredients || '',
+            instructions: record.fields.instructions || '',
+            videoUrl: record.fields.videoUrl || '',
+            imageFileData: record.fields.imageUrl?.[0]?.url || null,
+            tags: record.fields.tags || '',
+            prepTime: record.fields.prepTime || '',
+            cookTime: record.fields.cookTime || '',
+            equipment: record.fields.equipment || '',
+            mealType: record.fields.mealType || '',
+            servingSize: record.fields.servingSize || '',
+            season: record.fields.season || '',
+            createdAt: new Date(record.createdTime).getTime()
+          }));
+          
+          setRecipes(loadedRecipes.sort((a, b) => b.createdAt - a.createdAt));
         } catch (error) {
-          console.log('No recipes found yet');
+          console.error('Error loading recipes from Airtable:', error);
+          alert('Error loading recipes. Please check your internet connection.');
+        } finally {
+          setLoading(false);
         }
       };
+      
       const loadFavorites = async () => {
         try {
           const result = await window.storage.get('favorites');
