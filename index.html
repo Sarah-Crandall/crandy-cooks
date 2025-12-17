@@ -285,21 +285,68 @@
       const saveRecipe = async () => {
         setSaving(true);
         try {
-          const recipe = {
-            ...formData,
-            id: editingRecipe?.id || `recipe_${Date.now()}`,
-            createdAt: editingRecipe?.createdAt || Date.now(),
-            updatedAt: Date.now()
+          const fields = {
+            title: formData.title,
+            description: formData.description,
+            ingredients: formData.ingredients,
+            instructions: formData.instructions,
+            videoUrl: formData.videoUrl,
+            tags: formData.tags,
+            prepTime: formData.prepTime,
+            cookTime: formData.cookTime,
+            equipment: formData.equipment,
+            mealType: formData.mealType,
+            servingSize: formData.servingSize,
+            season: formData.season
           };
-
-          await window.storage.set(`recipe:${recipe.id}`, JSON.stringify(recipe));
+      
+          // Handle image if there's a new one
+          if (formData.imageFileData && formData.imageFile) {
+            fields.imageUrl = [{
+              url: formData.imageFileData
+            }];
+          }
+      
+          let response;
+          if (editingRecipe) {
+            // Update existing recipe
+            response = await fetch(
+              `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}/${editingRecipe.id}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+              }
+            );
+          } else {
+            // Create new recipe
+            response = await fetch(
+              `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+              }
+            );
+          }
+      
+          if (!response.ok) {
+            throw new Error('Failed to save recipe to Airtable');
+          }
+      
           await loadRecipes();
           setSuccessMessage(editingRecipe ? 'Recipe updated successfully!' : 'Recipe added successfully!');
           setTimeout(() => setSuccessMessage(''), 3000);
           resetForm();
         } catch (error) {
-          alert('Error saving recipe. The video file may be too large (max 5MB). Try using an Instagram link instead, or compress your video.');
           console.error('Save error:', error);
+          alert('Error saving recipe to Airtable. Please try again.');
         } finally {
           setSaving(false);
         }
