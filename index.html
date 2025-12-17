@@ -138,6 +138,7 @@
       const [selectedRecipe, setSelectedRecipe] = useState(null);
       const [showSpotify, setShowSpotify] = useState(false);
       const [copiedIngredients, setCopiedIngredients] = useState(false);
+      const [successMessage, setSuccessMessage] = useState('');
       const [copiedRecipe, setCopiedRecipe] = useState(false);
       const [formData, setFormData] = useState({
         title: '',
@@ -188,6 +189,8 @@
 
           await window.storage.set(`recipe:${recipe.id}`, JSON.stringify(recipe));
           await loadRecipes();
+          setSuccessMessage(editingRecipe ? 'Recipe updated successfully!' : 'Recipe added successfully!');
+          setTimeout(() => setSuccessMessage(''), 3000);
           resetForm();
         } catch (error) {
           alert('Error saving recipe. The video file may be too large (max 5MB). Try using an Instagram link instead, or compress your video.');
@@ -328,11 +331,11 @@
       });
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-stone-50">
           <header className="bg-white shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold" style={{color: '#B03060'}}>Crandy Cooks Recipe Collection</h1>
+                <h1 className="text-3xl font-bold" style={{color: '#B03060', fontFamily: "'Brush Script MT', cursive"}}>Crandy Cooks <span className="text-2xl font-normal" style={{fontFamily: "system-ui"}}>Recipe Collection</span></h1>
                 <button
                   onClick={() => setIsAdmin(!isAdmin)}
                   className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
@@ -342,6 +345,12 @@
               </div>
             </div>
           </header>
+          
+          {successMessage && (
+            <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+              ✓ {successMessage}
+            </div>
+          )}
 
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="mb-8">
@@ -355,6 +364,14 @@
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
+            </div>
+            <div className="mb-8">
+              ... search bar code ...
+            </div>
+            
+            {/* Recipe Count */}
+            <div className="mb-4 text-sm text-gray-600">
+              Showing {filteredRecipes.length} of {recipes.length} recipes
             </div>
             {/* Filters */}
             <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#B03060'}}>
@@ -742,9 +759,19 @@
 
             {filteredRecipes.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
-                  {recipes.length === 0 ? 'No recipes yet. Add your first recipe!' : 'No recipes match your search.'}
-                </p>
+                {recipes.length === 0 ? (
+                  <div>
+                    <div className="text-6xl mb-4">👨‍🍳</div>
+                    <p className="text-gray-700 text-xl font-semibold mb-2">No recipes yet!</p>
+                    <p className="text-gray-500">Click "Admin Mode" to add your first recipe.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-6xl mb-4">🔍</div>
+                    <p className="text-gray-700 text-xl font-semibold mb-2">No recipes found</p>
+                    <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
