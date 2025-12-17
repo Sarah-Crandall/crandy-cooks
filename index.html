@@ -147,6 +147,7 @@
       const [successMessage, setSuccessMessage] = useState('');
       const [copiedRecipe, setCopiedRecipe] = useState(false);
       const [favorites, setFavorites] = useState([]);
+      const [recentlyViewed, setRecentlyViewed] = useState([]);
       const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -167,6 +168,7 @@
       useEffect(() => {
         loadRecipes();
         loadFavorites();
+        loadRecentlyViewed();
       }, []);
 
       const loadRecipes = async () => {
@@ -195,6 +197,16 @@
         }
       };
 
+      const loadRecentlyViewed = async () => {
+        try {
+          const result = await window.storage.get('recentlyViewed');
+          if (result) {
+            setRecentlyViewed(JSON.parse(result.value));
+          }
+        } catch (error) {
+          console.log('No recently viewed yet');
+        }
+      };
       const toggleFavorite = async (recipeId) => {
         let newFavorites;
         if (favorites.includes(recipeId)) {
@@ -206,6 +218,14 @@
         await window.storage.set('favorites', JSON.stringify(newFavorites));
       };
 
+      const addToRecentlyViewed = async (recipeId) => {
+        let newRecentlyViewed = recentlyViewed.filter(id => id !== recipeId);
+        newRecentlyViewed.unshift(recipeId);
+        newRecentlyViewed = newRecentlyViewed.slice(0, 3); // Keep only last 3
+        setRecentlyViewed(newRecentlyViewed);
+        await window.storage.set('recentlyViewed', JSON.stringify(newRecentlyViewed));
+      };
+      
       const saveRecipe = async () => {
         setSaving(true);
         try {
@@ -808,7 +828,10 @@
                     <div className="flex">
                       <div 
                         className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group overflow-hidden"
-                        onClick={() => setSelectedRecipe(recipe)}
+                        onClick={() => {
+                          setSelectedRecipe(recipe);
+                          addToRecentlyViewed(recipe.id);
+                        }}
                       >
                         {recipe.imageFileData ? (
                           <>
@@ -836,7 +859,10 @@
                             <h3 
                               className="text-2xl font-bold text-gray-800 cursor-pointer transition flex-1"
                               style={{color: '#556B2F'}}
-                              onClick={() => setSelectedRecipe(recipe)}
+                              onClick={() => {
+                                setSelectedRecipe(recipe);
+                                addToRecentlyViewed(recipe.id);
+                              }}
                             >
                               {recipe.title}
                             </h3>
@@ -903,7 +929,10 @@
                         </div>
 
                         <button
-                          onClick={() => setSelectedRecipe(recipe)}
+                          onClick={() => {
+                            setSelectedRecipe(recipe);
+                            addToRecentlyViewed(recipe.id);
+                          }}
                           className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
                         >
                           View Full Recipe
