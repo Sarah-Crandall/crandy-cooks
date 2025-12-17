@@ -488,39 +488,103 @@
               </div>
             </div>
 
-            {/* Recently Viewed */}
-            {recentlyViewed.length > 0 && (
+            {/* Recipe Dashboard */}
+            {recipes.length > 0 && (
               <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#556B2F'}}>
-                <h3 className="text-sm font-semibold mb-3" style={{color: '#556B2F'}}>Recently Viewed</h3>
-                <div className="flex gap-3 overflow-x-auto">
-                  {recentlyViewed.map(recipeId => {
-                    const recipe = recipes.find(r => r.id === recipeId);
-                    if (!recipe) return null;
-                    return (
-                      <div
-                        key={recipe.id}
-                        onClick={() => {
-                          setSelectedRecipe(recipe);
-                          addToRecentlyViewed(recipe.id);
-                        }}
-                        className="flex-shrink-0 w-32 cursor-pointer hover:opacity-80 transition"
-                      >
-                        {recipe.imageFileData ? (
-                          <img
-                            src={recipe.imageFileData}
-                            alt={recipe.title}
-                            className="w-32 h-32 object-cover rounded-lg mb-2"
-                            style={{border: '2px solid #556B2F'}}
-                          />
-                        ) : (
-                          <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-2" style={{border: '2px solid #556B2F'}}>
-                            <Video size={32} className="text-gray-400" />
-                          </div>
-                        )}
-                        <p className="text-xs font-medium text-gray-800 line-clamp-2">{recipe.title}</p>
+                <h3 className="text-sm font-semibold mb-4" style={{color: '#556B2F'}}>Quick Access</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Recently Viewed */}
+                  {recentlyViewed.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-600 mb-2">Recently Viewed</p>
+                      <div className="flex gap-2">
+                        {recentlyViewed.slice(0, 3).map(recipeId => {
+                          const recipe = recipes.find(r => r.id === recipeId);
+                          if (!recipe) return null;
+                          return (
+                            <div
+                              key={recipe.id}
+                              onClick={() => {
+                                setSelectedRecipe(recipe);
+                                addToRecentlyViewed(recipe.id);
+                              }}
+                              className="flex-1 cursor-pointer hover:opacity-80 transition"
+                            >
+                              {recipe.imageFileData ? (
+                                <img
+                                  src={recipe.imageFileData}
+                                  alt={recipe.title}
+                                  className="w-full aspect-square object-cover rounded-lg mb-1"
+                                  style={{border: '1px solid #556B2F'}}
+                                />
+                              ) : (
+                                <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center mb-1" style={{border: '1px solid #556B2F'}}>
+                                  <Video size={24} className="text-gray-400" />
+                                </div>
+                              )}
+                              <p className="text-xs font-medium text-gray-800 line-clamp-1">{recipe.title}</p>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
+                  
+                  {/* Most Viewed */}
+                  {Object.keys(viewCounts).length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-600 mb-2">Most Viewed</p>
+                      {(() => {
+                        const mostViewedId = Object.keys(viewCounts).reduce((a, b) => 
+                          viewCounts[a] > viewCounts[b] ? a : b
+                        );
+                        const recipe = recipes.find(r => r.id === mostViewedId);
+                        if (!recipe) return null;
+                        return (
+                          <div
+                            onClick={() => {
+                              setSelectedRecipe(recipe);
+                              addToRecentlyViewed(recipe.id);
+                            }}
+                            className="cursor-pointer hover:opacity-80 transition"
+                          >
+                            {recipe.imageFileData ? (
+                              <img
+                                src={recipe.imageFileData}
+                                alt={recipe.title}
+                                className="w-full aspect-square object-cover rounded-lg mb-1"
+                                style={{border: '1px solid #556B2F'}}
+                              />
+                            ) : (
+                              <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center mb-1" style={{border: '1px solid #556B2F'}}>
+                                <Video size={32} className="text-gray-400" />
+                              </div>
+                            )}
+                            <p className="text-xs font-medium text-gray-800 line-clamp-1">{recipe.title}</p>
+                            <p className="text-xs text-gray-500">{viewCounts[mostViewedId]} views</p>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                  
+                  {/* Surprise Me */}
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-2">Feeling Adventurous?</p>
+                    <button
+                      onClick={() => {
+                        const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+                        setSelectedRecipe(randomRecipe);
+                        addToRecentlyViewed(randomRecipe.id);
+                      }}
+                      className="w-full aspect-square bg-gradient-to-br from-green-100 to-stone-100 rounded-lg flex flex-col items-center justify-center hover:opacity-80 transition"
+                      style={{border: '1px solid #556B2F'}}
+                    >
+                      <span className="text-4xl mb-2">🎲</span>
+                      <span className="text-sm font-semibold" style={{color: '#556B2F'}}>Surprise Me!</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
