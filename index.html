@@ -335,10 +335,10 @@
           <header className="bg-white shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold" style={{color: '#B03060', fontFamily: "'Brush Script MT', cursive"}}>Crandy Cooks <span className="text-2xl font-normal" style={{fontFamily: "system-ui"}}>Recipe Collection</span></h1>
+                <h1 className="text-3xl font-bold" style={{color: '#556B2F', fontFamily: "'Brush Script MT', cursive"}}>Crandy Cooks <span className="text-2xl font-normal" style={{fontFamily: "system-ui"}}>Recipe Collection</span></h1>
                 <button
                   onClick={() => setIsAdmin(!isAdmin)}
-                  className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
+                  className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
                 >
                   {isAdmin ? 'View Mode' : 'Admin Mode'}
                 </button>
@@ -366,7 +366,6 @@
               </div>
             </div>
             <div className="mb-8">
-              ... search bar code ...
             </div>
             
             {/* Recipe Count */}
@@ -374,8 +373,8 @@
               Showing {filteredRecipes.length} of {recipes.length} recipes
             </div>
             {/* Filters */}
-            <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#B03060'}}>
-              <h3 className="text-sm font-semibold mb-3" style={{color: '#B03060'}}>Filter Recipes</h3>
+            <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#556B2F'}}>
+              <h3 className="text-sm font-semibold mb-3" style={{color: '#556B2F'}}>Filter Recipes</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
@@ -776,7 +775,7 @@
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {filteredRecipes.map((recipe) => (
-                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" style={{border: '2px solid #B03060'}}>
+                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" style={{border: '2px solid #556B2F'}}>
                     <div className="flex">
                       <div 
                         className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group"
@@ -843,17 +842,17 @@
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {recipe.mealType && recipe.mealType.split(',').map((type, idx) => (
-                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
                                   {type.trim()}
                                 </span>
                               ))}
                               {recipe.servingSize && (
-                                <span className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                <span className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
                                   {recipe.servingSize === 'dinner-for-two' ? 'Dinner for Two' : 'Hosting/Leftovers'}
                                 </span>
                               )}
                               {recipe.season && recipe.season.split(',').map((s, idx) => (
-                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#B03060'}}>
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
                                   {s.trim()}
                                 </span>
                               ))}
@@ -863,7 +862,7 @@
 
                         <button
                           onClick={() => setSelectedRecipe(recipe)}
-                          className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
+                          className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
                         >
                           View Full Recipe
                         </button>
@@ -946,7 +945,7 @@
                       </button>
                       <button
                         onClick={() => copyFullRecipe(selectedRecipe)}
-                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#B03060'}}
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
                       >
                         {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
                         {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
