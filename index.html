@@ -312,13 +312,19 @@
 
       const filteredRecipes = recipes.filter(recipe => {
         const searchLower = searchTerm.toLowerCase();
-        return (
-          recipe.title.toLowerCase().includes(searchLower) ||
-          recipe.description.toLowerCase().includes(searchLower) ||
-          recipe.ingredients.toLowerCase().includes(searchLower) ||
-          recipe.tags.toLowerCase().includes(searchLower) ||
+        const matchesSearch = (
+          (recipe.title && recipe.title.toLowerCase().includes(searchLower)) ||
+          (recipe.description && recipe.description.toLowerCase().includes(searchLower)) ||
+          (recipe.ingredients && recipe.ingredients.toLowerCase().includes(searchLower)) ||
+          (recipe.tags && recipe.tags.toLowerCase().includes(searchLower)) ||
           (recipe.equipment && recipe.equipment.toLowerCase().includes(searchLower))
         );
+      
+        const matchesType = !filterType || (recipe.mealType && recipe.mealType.includes(filterType));
+        const matchesServingSize = !filterServingSize || recipe.servingSize === filterServingSize;
+        const matchesSeason = !filterSeason || (recipe.season && recipe.season.includes(filterSeason));
+      
+        return matchesSearch && matchesType && matchesServingSize && matchesSeason;
       });
 
       return (
