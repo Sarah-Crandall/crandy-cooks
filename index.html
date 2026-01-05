@@ -562,6 +562,7 @@
                     <option value="breakfast">Breakfast</option>
                     <option value="lunch">Lunch</option>
                     <option value="dinner">Dinner</option>
+                    <option value="dessert">Dessert</option>
                   </select>
                 </div>
                 <div>
@@ -919,6 +920,24 @@
                           />
                           Dinner
                         </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.mealType?.includes('dessert') || false}
+                            onChange={(e) => {
+                              const types = formData.mealType ? formData.mealType.split(',') : [];
+                              if (e.target.checked) {
+                                types.push('dessert');
+                              } else {
+                                const index = types.indexOf('dessert');
+                                if (index > -1) types.splice(index, 1);
+                              }
+                              setFormData({...formData, mealType: types.join(',')});
+                            }}
+                            className="mr-2"
+                          />
+                          Dessert
+                          </label>
                       </div>
                     </div>
 
