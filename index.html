@@ -510,10 +510,10 @@
           <header className="bg-white shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold" style={{color: '#556B2F', fontFamily: "'Brush Script MT', cursive"}}>Crandy Cooks <span className="text-2xl font-normal" style={{fontFamily: "system-ui"}}>Recipe Collection</span></h1>
+                <h1 className="text-3xl font-bold" style={{color: '#1c3652', fontFamily: "'Brush Script MT', cursive"}}>Crandy Cooks <span className="text-2xl font-normal" style={{fontFamily: "system-ui"}}>Recipe Collection</span></h1>
                 <button
                   onClick={() => setIsAdmin(!isAdmin)}
-                  className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
+                  className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#1c3652'}}
                 >
                   {isAdmin ? 'View Mode' : 'Admin Mode'}
                 </button>
@@ -548,8 +548,8 @@
               Showing {filteredRecipes.length} of {recipes.length} recipes
             </div>
             {/* Filters */}
-            <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#556B2F'}}>
-              <h3 className="text-sm font-semibold mb-3" style={{color: '#556B2F'}}>Filter Recipes</h3>
+            <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#1c3652'}}>
+              <h3 className="text-sm font-semibold mb-3" style={{color: '#1c3652'}}>Filter Recipes</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
@@ -599,19 +599,19 @@
                 <button
                   onClick={() => setShowDashboard(!showDashboard)}
                   className="flex items-center justify-between w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
-                  style={{borderColor: '#556B2F'}}
+                  style={{borderColor: '#1c3652'}}
                 >
-                  <span className="font-medium" style={{color: '#556B2F'}}>📊 Quick Access</span>
+                  <span className="font-medium" style={{color: '#1c3652'}}>📊 Quick Access</span>
                   {showDashboard ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
                 
                 {showDashboard && (
-                  <div className="mt-3 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#556B2F'}}>
+                  <div className="mt-3 bg-white p-4 rounded-lg shadow-sm border" style={{borderColor: '#1c3652'}}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Recently Viewed */}
                       {recentlyViewed.length > 0 && (
                         <div>
-                          <p className="text-xs font-semibold mb-2" style={{color: '#556B2F'}}>Recently Viewed</p>
+                          <p className="text-xs font-semibold mb-2" style={{color: '#1c3652'}}>Recently Viewed</p>
                           <div className="flex gap-2">
                             {recentlyViewed.slice(0, 3).map(recipeId => {
                               const recipe = recipes.find(r => r.id === recipeId);
@@ -630,10 +630,10 @@
                                       src={recipe.imageFileData}
                                       alt={recipe.title}
                                       className="w-full h-20 object-cover rounded-md mb-1"
-                                      style={{border: '1px solid #556B2F'}}
+                                      style={{border: '1px solid #1c3652'}}
                                     />
                                   ) : (
-                                    <div className="w-full h-20 bg-gray-100 rounded-md flex items-center justify-center mb-1" style={{border: '1px solid #556B2F'}}>
+                                    <div className="w-full h-20 bg-gray-100 rounded-md flex items-center justify-center mb-1" style={{border: '1px solid #1c3652'}}>
                                       <Video size={20} className="text-gray-400" />
                                     </div>
                                   )}
@@ -648,7 +648,7 @@
                       {/* Most Viewed */}
                       {Object.keys(viewCounts).length > 0 && (
                         <div>
-                          <p className="text-xs font-semibold mb-2" style={{color: '#556B2F'}}>Most Viewed</p>
+                          <p className="text-xs font-semibold mb-2" style={{color: '#1c3652'}}>Most Viewed</p>
                           {(() => {
                             const mostViewedId = Object.keys(viewCounts).reduce((a, b) => 
                               viewCounts[a] > viewCounts[b] ? a : b
@@ -668,10 +668,10 @@
                                     src={recipe.imageFileData}
                                     alt={recipe.title}
                                     className="w-full h-32 object-cover rounded-md mb-1"
-                                    style={{border: '1px solid #556B2F'}}
+                                    style={{border: '1px solid #1c3652'}}
                                   />
                                 ) : (
-                                  <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center mb-1" style={{border: '1px solid #556B2F'}}>
+                                  <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center mb-1" style={{border: '1px solid #1c3652'}}>
                                     <Video size={28} className="text-gray-400" />
                                   </div>
                                 )}
@@ -685,7 +685,7 @@
                       
                       {/* Surprise Me */}
                       <div>
-                        <p className="text-xs font-semibold mb-2" style={{color: '#556B2F'}}>Feeling Adventurous?</p>
+                        <p className="text-xs font-semibold mb-2" style={{color: '#1c3652'}}>Feeling Adventurous?</p>
                         <button
                           onClick={() => {
                             const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
@@ -693,10 +693,10 @@
                             addToRecentlyViewed(randomRecipe.id);
                           }}
                           className="w-full h-32 bg-gradient-to-br from-green-100 to-stone-100 rounded-md flex flex-col items-center justify-center hover:opacity-80 transition"
-                          style={{border: '1px solid #556B2F'}}
+                          style={{border: '1px solid #1c3652'}}
                         >
                           <span className="text-3xl mb-1">🎲</span>
-                          <span className="text-sm font-semibold" style={{color: '#556B2F'}}>Surprise Me!</span>
+                          <span className="text-sm font-semibold" style={{color: '#1c3652'}}>Surprise Me!</span>
                         </button>
                       </div>
                     </div>
@@ -1063,7 +1063,7 @@
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {filteredRecipes.map((recipe) => (
-                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" style={{border: '2px solid #556B2F'}}>
+                  <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" style={{border: '2px solid #1c3652'}}>
                     <div className="flex">
                       <div 
                         className="w-48 h-48 flex-shrink-0 bg-gray-100 cursor-pointer relative group overflow-hidden"
@@ -1097,7 +1097,7 @@
                           <div className="flex justify-between items-start mb-2">
                             <h3 
                               className="text-2xl font-bold text-gray-800 cursor-pointer transition flex-1"
-                              style={{color: '#556B2F'}}
+                              style={{color: '#1c3652'}}
                               onClick={() => {
                                 setSelectedRecipe(recipe);
                                 addToRecentlyViewed(recipe.id);
@@ -1112,7 +1112,7 @@
                                   toggleFavorite(recipe.id);
                                 }}
                                 className="transition-colors"
-                                style={{color: favorites.includes(recipe.id) ? '#556B2F' : '#D1D5DB'}}
+                                style={{color: favorites.includes(recipe.id) ? '#1c3652' : '#D1D5DB'}}
                               >
                                 <Heart size={24} filled={favorites.includes(recipe.id)} />
                               </button>
@@ -1149,17 +1149,17 @@
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {recipe.mealType && recipe.mealType.split(',').map((type, idx) => (
-                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#1c3652'}}>
                                   {type.trim()}
                                 </span>
                               ))}
                               {recipe.servingSize && (
-                                <span className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
+                                <span className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#1c3652'}}>
                                   {recipe.servingSize === 'dinner-for-two' ? 'Dinner for Two' : 'Hosting/Leftovers'}
                                 </span>
                               )}
                               {recipe.season && recipe.season.split(',').map((s, idx) => (
-                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#556B2F'}}>
+                                <span key={idx} className="px-2 py-1 text-xs rounded-full text-white" style={{backgroundColor: '#1c3652'}}>
                                   {s.trim()}
                                 </span>
                               ))}
@@ -1172,7 +1172,7 @@
                             setSelectedRecipe(recipe);
                             addToRecentlyViewed(recipe.id);
                           }}
-                          className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
+                          className="mt-3 self-start px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#1c3652'}}
                         >
                           View Full Recipe
                         </button>
@@ -1255,7 +1255,7 @@
                       </button>
                       <button
                         onClick={() => copyFullRecipe(selectedRecipe)}
-                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#556B2F'}}
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition" style={{backgroundColor: '#1c3652'}}
                       >
                         {copiedRecipe ? <Check size={18} /> : <Copy size={18} />}
                         {copiedRecipe ? '✓ Copied!' : '📄 Copy Full Recipe'}
