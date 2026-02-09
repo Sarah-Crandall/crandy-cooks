@@ -170,7 +170,8 @@
         equipment: '',
         mealType: '',
         servingSize: '',
-        season: ''
+        season: '',
+        dietaryRestrictions: ''
       });
 
       useEffect(() => {
@@ -397,7 +398,8 @@
           equipment: '',
           mealType: '',
           servingSize: '',
-          season: ''
+          season: '',
+          dietaryRestrictions: ''
         });
         setEditingRecipe(null);
         setShowForm(false);
@@ -1028,6 +1030,83 @@
                             className="mr-2"
                           />
                           Winter
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Dietary Restrictions (select all that apply)</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.dietaryRestrictions?.includes('dairy-free') || false}
+                            onChange={(e) => {
+                              const restrictions = formData.dietaryRestrictions ? formData.dietaryRestrictions.split(',') : [];
+                              if (e.target.checked) {
+                                restrictions.push('dairy-free');
+                              } else {
+                                const index = restrictions.indexOf('dairy-free');
+                                if (index > -1) restrictions.splice(index, 1);
+                              }
+                              setFormData({...formData, dietaryRestrictions: restrictions.join(',')});
+                            }}
+                            className="mr-2"
+                          />
+                          Dairy Free
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.dietaryRestrictions?.includes('dairy-free-option') || false}
+                            onChange={(e) => {
+                              const restrictions = formData.dietaryRestrictions ? formData.dietaryRestrictions.split(',') : [];
+                              if (e.target.checked) {
+                                restrictions.push('dairy-free-option');
+                              } else {
+                                const index = restrictions.indexOf('dairy-free-option');
+                                if (index > -1) restrictions.splice(index, 1);
+                              }
+                              setFormData({...formData, dietaryRestrictions: restrictions.join(',')});
+                            }}
+                            className="mr-2"
+                          />
+                          Dairy Free Option
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.dietaryRestrictions?.includes('vegetarian') || false}
+                            onChange={(e) => {
+                              const restrictions = formData.dietaryRestrictions ? formData.dietaryRestrictions.split(',') : [];
+                              if (e.target.checked) {
+                                restrictions.push('vegetarian');
+                              } else {
+                                const index = restrictions.indexOf('vegetarian');
+                                if (index > -1) restrictions.splice(index, 1);
+                              }
+                              setFormData({...formData, dietaryRestrictions: restrictions.join(',')});
+                            }}
+                            className="mr-2"
+                          />
+                          Vegetarian
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.dietaryRestrictions?.includes('vegetarian-option') || false}
+                            onChange={(e) => {
+                              const restrictions = formData.dietaryRestrictions ? formData.dietaryRestrictions.split(',') : [];
+                              if (e.target.checked) {
+                                restrictions.push('vegetarian-option');
+                              } else {
+                                const index = restrictions.indexOf('vegetarian-option');
+                                if (index > -1) restrictions.splice(index, 1);
+                              }
+                              setFormData({...formData, dietaryRestrictions: restrictions.join(',')});
+                            }}
+                            className="mr-2"
+                          />
+                          Vegetarian Option
                         </label>
                       </div>
                     </div>
