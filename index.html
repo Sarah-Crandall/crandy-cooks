@@ -214,6 +214,7 @@
             mealType: record.fields.mealType || '',
             servingSize: record.fields.servingSize || '',
             season: record.fields.season || '',
+            dietaryRestrictions: record.fields.dietaryRestrictions || '',
             createdAt: new Date(record.createdTime).getTime()
           }));
           
@@ -300,7 +301,8 @@
             equipment: formData.equipment,
             mealType: formData.mealType,
             servingSize: formData.servingSize,
-            season: formData.season
+            season: formData.season,
+            dietaryRestrictions: formData.dietaryRestrictions
           };
       
           // Handle image if there's a new one
